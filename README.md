@@ -48,6 +48,9 @@ Add the following HTML to your markdown/html file.
 The `src` in above `script` tag is in `liquid` format for it to work well with my jekyll setup. You should define the way that works for your setup.  
 The `<p>` tag at the end points to the link of the blog where I explain the motivation of doing this.
 
+The quotes are shown on my [website](svaderia.github.io).  
+See [this](https://github.com/svaderia/svaderia.github.io/commit/9704cadbca356e3d4b092c17d6bd988513c11695) for more details on CSS.
+
 
 ## Show quotes on your iPhone with custom widget
 > TODO
