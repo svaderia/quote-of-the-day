@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+
+import os
+import json
+import subprocess
+
+# 1. Check if GITHUB_DIR env variable is set
+github_dir = os.getenv('GITHUB_DIR')
+if not github_dir:
+    raise EnvironmentError("GITHUB_DIR environment variable is not set.")
+
+# 2. Change directory to GITHUB_DIR
+os.chdir(github_dir)
+
+# 3. Change directory to quote-of-the-day
+quote_dir = 'quote-of-the-day'
+if not os.path.isdir(quote_dir):
+    raise FileNotFoundError(f"The directory '{quote_dir}' does not exist.")
+os.chdir(quote_dir)
+
+# 4. Read quotes.json file
+quotes_file = 'quotes.json'
+if not os.path.isfile(quotes_file):
+    raise FileNotFoundError(f"The file '{quotes_file}' does not exist.")
+
+with open(quotes_file, 'r', encoding='utf-8') as file:
+    quotes_data = json.load(file)
+
+# 5. Ask user for prompts
+quote = input("Enter the quote: ")
+attribution = input("Enter the attribution: ")
+commit_message = input("Enter the commit message: ")
+
+# Append new quote and attribution to the JSON data
+quotes_data.append({"quote": quote, "attribution": attribution})
+
+# 6. Write back to the JSON file, maintaining data integrity
+with open(quotes_file, 'w', encoding='utf-8') as file:
+    json.dump(quotes_data, file, indent=4)
+
+# 7. Make a git commit
+subprocess.run(['git', 'add', quotes_file], check=True)
+subprocess.run(['git', 'commit', '-m', f'(quote) {commit_message}'], check=True)

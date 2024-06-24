@@ -54,3 +54,8 @@ See [this](https://github.com/svaderia/svaderia.github.io/commit/9704cadbca356e3
 
 ## Show quotes on your iPhone with custom widget
 > TODO
+
+## Add a new quote
+Now we need to make it easier to add new quotes. As usual let's make a quick python script. See `scripts/bin/qt` file.
+
+After that, I ran `stow --target=$HOME scripts` to make a symlink in my `$HOME/bin` folder. so now I can add new quotes easily with `qt` command.
