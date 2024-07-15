@@ -41,3 +41,8 @@ with open(quotes_file, 'w', encoding='utf-8') as file:
 # 7. Make a git commit
 subprocess.run(['git', 'add', quotes_file], check=True)
 subprocess.run(['git', 'commit', '-m', f'(quote) {commit_message}'], check=True)
+
+push = input("Push to github (Y/N): ")
+if push == "Y" or push == 'y':
+    subprocess.run(['git', 'push', 'origin', f'master'], check=True)
+
