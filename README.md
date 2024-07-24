@@ -1,3 +1,4 @@
+> Here is a 3 part blog post that talks about the project [Bringing Motivation to Your Day: Quote of the Day Project](https://svaderia.github.io/articles/bringing-motivation-to-your-day-quote-of-the-day-project/)
 # Quote of the day
 
 The right quote can motivate me anyday. I want a way to see my quotes frequently.
