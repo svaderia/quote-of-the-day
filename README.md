@@ -53,7 +53,59 @@ See [this](https://github.com/svaderia/svaderia.github.io/commit/9704cadbca356e3
 
 
 ## Show quotes on your iPhone with custom widget
-> TODO
+Checkout the awesome [Sciptable](https://scriptable.app/) project. 
+It runs the JavaScript code on your iPhone and includes some custom APIs to modify the widget.
+We can use it to create a widget that pulls the data form the `quote.json` like our website and show it on the widget.
+
+Following is the javascript code that does this.
+
+```javascript
+const URL = 'https://raw.githubusercontent.com/svaderia/quote-of-the-day/main/quotes.json';
+
+// Fetch quotes
+const response = await new Request(URL).loadJSON();
+const quotes = response;
+
+// Get today's date and create a seed
+const today = new Date().toISOString().split('T')[0];
+const seed = today.split('-').join('');
+
+// Generate a seeded random number
+function seededRandom(seed) {
+  let x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+const randomIndex = Math.floor(seededRandom(seed) * quotes.length);
+const randomQuote = quotes[randomIndex];
+
+// Create widget
+let widget = new ListWidget();
+
+// Set semi-transparent background color
+widget.backgroundColor = new Color("#000000", 0.3); // Black color with 50% opacity
+
+// Add quote text
+let quoteText = widget.addText(randomQuote.quote);
+quoteText.textColor = Color.white();
+quoteText.font = Font.boldSystemFont(16);
+quoteText.centerAlignText();
+
+// Add attribution text
+let attributionText = widget.addText("- " + randomQuote.attribution);
+attributionText.textColor = Color.gray();
+attributionText.font = Font.italicSystemFont(12);
+attributionText.centerAlignText();
+
+// Set the widget
+if (config.runsInWidget) {
+  Script.setWidget(widget);
+} else {
+  widget.presentMedium();
+}
+
+Script.complete();
+```
 
 ## Add a new quote
 Now we need to make it easier to add new quotes. As usual let's make a quick python script. See `scripts/bin/qt` file.
