@@ -44,5 +44,5 @@ subprocess.run(['git', 'commit', '-m', f'(quote) {commit_message}'], check=True)
 
 push = input("Push to github (Y/N): ")
 if push == "Y" or push == 'y':
-    subprocess.run(['git', 'push', 'origin', f'master'], check=True)
+    subprocess.run(['git', 'push', 'origin'], check=True)
 
