@@ -7,10 +7,117 @@ This is my hacky attempt to show the quotes I like on my website and eventually 
 
 Goal: randomly pick a quote for the day from all the stored quotes.
 
+# V2
+Now in the [first](#V1) version, we were choosing a random quote based on an easy, non-uniform random function.
+This used to lead to some quotes repeating far often and some not coming up at all. 
+
+To make it uniform, I created `script/bin/rn`, which will generate files `quotes/{month}.json`, 
+which can be indexed by the day in the `js` script to choose the index into the `quotes.json`.
+The indices are randomly permuted and gets assigned to the day, so we get roughly uniform distribution.
+
+The new `json` files can be accessed at `https://raw.githubusercontent.com/svaderia/quote-of-the-day/main/quotes/{month}.json`.
+
+## Show quotes on your website
+
+```javascript
+document.addEventListener("DOMContentLoaded", function () {
+  const today = new Date();
+  const month = today.getMonth() + 1; // getMonth() returns 0 (January) to 11 (December), so add 1
+  const day = today.getDate(); // get the current day (1-31)
+
+  // First fetch the dictionary for the current month
+  fetch(`https://raw.githubusercontent.com/svaderia/quote-of-the-day/main/quotes/${month}.json`)
+    .then(response => response.json())
+    .then(dayToIndex => {
+      // Use the day to get the index
+      const index = dayToIndex[day.toString()]; // Convert day to string to match the keys in the dictionary
+      console.log(index);
+      if (index === undefined) {
+        throw new Error(`No index found for day ${day}`);
+      }
+
+      // Now fetch the quotes array
+      return fetch('https://raw.githubusercontent.com/svaderia/quote-of-the-day/main/quotes.json')
+        .then(response => response.json())
+        .then(quotes => {
+          const randomQuote = quotes[index];
+          if (randomQuote) {
+            document.getElementById('quote').innerText = randomQuote.quote;
+            document.getElementById('attribution').innerText = "- " + randomQuote.attribution;
+          } else {
+            console.error('No quote found for the index', index);
+          }
+        });
+    })
+    .catch(error => console.error('Error fetching the quote:', error));
+});
+```
+
+## Show quotes on your iPhone with custom widget
+```javascript
+
+const QUOTES_URL = 'https://raw.githubusercontent.com/svaderia/quote-of-the-day/main/quotes.json';
+const MONTH_URL_TEMPLATE = 'https://raw.githubusercontent.com/svaderia/quote-of-the-day/main/quotes/{month}.json';
+
+// Get today's date
+const today = new Date();
+const month = today.getMonth() + 1; // getMonth() returns 0 (January) to 11 (December), so add 1
+const day = today.getDate(); // get the current day (1-31)
+
+// Fetch the dictionary for the current month
+const monthUrl = MONTH_URL_TEMPLATE.replace('{month}', month);
+const monthResponse = await new Request(monthUrl).loadJSON();
+const dayToIndex = monthResponse;
+
+// Get the index for today
+const index = dayToIndex[day.toString()];
+if (index === undefined) {
+  throw new Error(`No index found for day ${day}`);
+}
+
+// Fetch the quotes array
+const quotesResponse = await new Request(QUOTES_URL).loadJSON();
+const quotes = quotesResponse;
+
+// Get the quote using the index
+const randomQuote = quotes[index];
+if (!randomQuote) {
+  throw new Error(`No quote found for the index ${index}`);
+}
+
+// Create widget
+let widget = new ListWidget();
+
+// Set semi-transparent background color
+widget.backgroundColor = new Color("#000000", 0.3); // Black color with 30% opacity
+
+// Add quote text
+let quoteText = widget.addText(randomQuote.quote);
+quoteText.textColor = Color.white();
+quoteText.font = Font.boldSystemFont(16);
+quoteText.centerAlignText();
+
+// Add attribution text
+let attributionText = widget.addText("- " + randomQuote.attribution);
+attributionText.textColor = Color.gray();
+attributionText.font = Font.italicSystemFont(12);
+attributionText.centerAlignText();
+
+// Set the widget
+if (config.runsInWidget) {
+  Script.setWidget(widget);
+} else {
+  widget.presentMedium();
+}
+
+Script.complete();
+```
+
+# V1
 ## Show quotes on your website.
 We will use custom JavaScript and HTML to quickly read the json and parse a quote. 
 
-```js
+```javascript
 document.addEventListener("DOMContentLoaded", function () {
   fetch('https://raw.githubusercontent.com/svaderia/quote-of-the-day/main/quotes.json')
     .then(response => response.json())
