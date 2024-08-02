@@ -38,6 +38,10 @@ quotes_data.append({"quote": quote, "attribution": attribution})
 with open(quotes_file, 'w', encoding='utf-8') as file:
     json.dump(quotes_data, file, indent=4)
 
+# 7. run the regenerate script
+subprocess.run(['rn'], check=True)
+
+
 # 7. Make a git commit
 subprocess.run(['git', 'add', quotes_file], check=True)
 subprocess.run(['git', 'commit', '-m', f'(quote) {commit_message}'], check=True)

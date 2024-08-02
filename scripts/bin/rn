@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+
+import json
+import os
+from datetime import datetime, timedelta
+import random
+
+# Helper function to get the next_day
+def next_day(date):
+    return date + timedelta(days=1)
+
+# Helper function to get the previous_day
+def prev_day(date):
+    return date - timedelta(days=1)
+
+
+def load_previous_data():
+    data = {}
+    for mn in range(1, 13, 1):
+        fname = f"quotes/{mn}.json"
+        with open(fname, 'r') as file:
+            data[mn] = json.load(file)
+    return data
+
+def write_data(data):
+    for mn in range(1, 13, 1):
+        fname = f"quotes/{mn}.json"
+        with open(fname, 'w') as file:
+            json.dump(data[mn], file, indent=4)
+
+
+def reconcile_data(prev_data, data, qlen):
+    seen_indices = set()
+    date = datetime.today()
+
+    while True:
+        dt = str(date.day)
+        mn = date.month
+
+        if mn not in prev_data or dt not in prev_data[mn]:
+            print(f"not {mn} and {dt}")
+            print(prev_data[mn])
+            break;
+
+        idx = prev_data[mn][dt]
+        if idx in seen_indices:
+            break;
+        seen_indices.add(idx)
+
+        data[mn][dt] = idx
+
+        date = prev_day(date)
+
+    remaining_idx = [i for i in range(qlen) if i not in seen_indices]
+    random.shuffle(remaining_idx)
+
+    date = next_day(datetime.today())
+
+    for idx in remaining_idx:
+        dt = date.day
+        mn = date.month
+
+        data[mn][dt] = idx
+
+        date = next_day(date)
+
+
+def main():
+    # 1. Check if GITHUB_DIR env variable is set
+    github_dir = os.getenv('GITHUB_DIR')
+    if not github_dir:
+        raise EnvironmentError("GITHUB_DIR environment variable is not set.")
+
+    # 2. Change directory to GITHUB_DIR
+    os.chdir(github_dir)
+
+    # 3. Change directory to quote-of-the-day
+    quote_dir = 'quote-of-the-day'
+    if not os.path.isdir(quote_dir):
+        raise FileNotFoundError(f"The directory '{quote_dir}' does not exist.")
+    os.chdir(quote_dir)
+
+    # 4. Read quotes.json file
+    quotes_file = 'quotes.json'
+    if not os.path.isfile(quotes_file):
+        raise FileNotFoundError(f"The file '{quotes_file}' does not exist.")
+
+    with open(quotes_file, 'r', encoding='utf-8') as file:
+        quotes_data = json.load(file)
+
+    # Directory path
+    directory_path = 'quotes'
+
+    # Create the directory if it doesn't exist
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+        print(f"Directory '{directory_path}' created.")
+    else:
+        print(f"Directory '{directory_path}' already exists.")
+
+    # Get today's date and extract the month
+    today = datetime.today()
+    month = today.month
+
+    # prev data
+    prev_data = load_previous_data()
+
+    # data to hold for the json
+    data = {i + 1:{} for i in range(12)}
+
+    reconcile_data(prev_data, data, len(quotes_data))
+
+    print(data)
+
+    # init
+    new_date = next_day(today)
+    indices = [i for i in range(len(quotes_data))]
+    random.shuffle(indices)
+    i = 0
+
+    # loop until you can't change anymore
+    while new_date.day != today.day or new_date.month != today.month:
+        mn = new_date.month
+        dy = str(new_date.day)
+        new_date = next_day(new_date)
+
+        if dy in data[mn]:
+            continue
+
+        data[mn][dy] = indices[i]
+
+        i += 1
+        if i == len(quotes_data):
+            random.shuffle(indices)
+            i = 0
+
+    write_data(data)
+
+    print("done")
+
+if __name__ == "__main__":
+    main()
