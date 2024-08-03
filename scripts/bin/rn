@@ -57,7 +57,7 @@ def reconcile_data(prev_data, data, qlen):
     date = next_day(datetime.today())
 
     for idx in remaining_idx:
-        dt = date.day
+        dt = str(date.day)
         mn = date.month
 
         data[mn][dt] = idx
