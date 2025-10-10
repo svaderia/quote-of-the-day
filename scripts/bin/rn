@@ -14,56 +14,11 @@ def prev_day(date):
     return date - timedelta(days=1)
 
 
-def load_previous_data():
-    data = {}
-    for mn in range(1, 13, 1):
-        fname = f"quotes/{mn}.json"
-        with open(fname, 'r') as file:
-            data[mn] = json.load(file)
-    return data
-
 def write_data(data):
     for mn in range(1, 13, 1):
         fname = f"quotes/{mn}.json"
         with open(fname, 'w') as file:
             json.dump(data[mn], file, indent=4)
-
-
-def reconcile_data(prev_data, data, qlen):
-    seen_indices = set()
-    date = datetime.today()
-
-    while True:
-        dt = str(date.day)
-        mn = date.month
-
-        if mn not in prev_data or dt not in prev_data[mn]:
-            print(f"not {mn} and {dt}")
-            print(prev_data[mn])
-            break;
-
-        idx = prev_data[mn][dt]
-        if idx in seen_indices:
-            break;
-        seen_indices.add(idx)
-
-        data[mn][dt] = idx
-
-        date = prev_day(date)
-
-    remaining_idx = [i for i in range(qlen) if i not in seen_indices]
-    random.shuffle(remaining_idx)
-
-    date = next_day(datetime.today())
-
-    for idx in remaining_idx:
-        dt = str(date.day)
-        mn = date.month
-
-        data[mn][dt] = idx
-
-        date = next_day(date)
-
 
 def main():
     # 1. Check if GITHUB_DIR env variable is set
@@ -87,6 +42,8 @@ def main():
 
     with open(quotes_file, 'r', encoding='utf-8') as file:
         quotes_data = json.load(file)
+        
+    print("Total quotes: ", len(quotes_data))
 
     # Directory path
     directory_path = 'quotes'
@@ -102,16 +59,10 @@ def main():
     today = datetime.today()
     month = today.month
 
-    # prev data
-    prev_data = load_previous_data()
-
     # data to hold for the json
     data = {i + 1:{} for i in range(12)}
 
-    reconcile_data(prev_data, data, len(quotes_data))
-
-    print(data)
-
+    random.seed(42)
     # init
     new_date = next_day(today)
     indices = [i for i in range(len(quotes_data))]
