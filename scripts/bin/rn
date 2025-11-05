@@ -76,7 +76,6 @@ def main():
     while new_date.day != today.day or new_date.month != today.month:
         mn = new_date.month
         dy = str(new_date.day)
-        new_date = next_day(new_date)
 
         if dy in data[mn]:
             continue
@@ -87,6 +86,12 @@ def main():
         if i == len(quotes_data):
             random.shuffle(indices)
             i = 0
+
+        new_date = next_day(new_date)
+
+    mn = new_date.month
+    dy = str(new_date.day)
+    data[mn][dy] = indices[i]
 
     write_data(data)
 
